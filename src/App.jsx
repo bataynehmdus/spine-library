@@ -134,7 +134,7 @@ export default function App() {
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <div className="brand-header">
-            <img src="https://via.placeholder.com/40" alt="Logo" className="brand-logo-img" />
+            <img src="Logo_Large_White.png" alt="Logo" className="brand-logo-img" />
           </div>
 
           <h1 className="hero-title">Spine library</h1>
