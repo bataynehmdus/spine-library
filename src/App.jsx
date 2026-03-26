@@ -12,7 +12,7 @@ const TIER_INFO = {
     description: "This tier provides a foundational understanding of spinal health and common conditions. Using accessible, non-medical language and clear visual metaphors, these videos focus on reducing anxiety."
   },
   L2: {
-    label: "The Mechanics (L2)",
+    label: "How It Works (L2)",
     title: "Tier 2: Column (L2) - The Procedural Journey",
     description: "This level transitions into the 'how' and 'why' of spinal mechanics and interventions. It provides a more structured exploration of anatomy and the logical steps of a treatment plan."
   },
@@ -111,21 +111,19 @@ export default function App() {
     if (currentIndex !== -1) {
       // 3. Slice the array to get the videos *after* the current one
       const after = sameClassVideos.slice(currentIndex + 1);
-      // 4. Slice the array to get the videos *before* the current one (to loop back around)
-      // const before = sameClassVideos.slice(0, currentIndex);
       
-      // Combine them so it smoothly plays in order and grabs the next 4
+      // 4. Combine them so it smoothly plays in order and grabs the next 4
       nextVideosSequence = [...after].slice(0, 4);
     }
   }
 
   return (
     <div className="app-container">
-      {/* Top Menu */}
+      {/* Top Menu Updated */}
       <nav className="top-menu">
-        <span>Home &gt; Video Library &gt; </span>
-        <span className={selectedLevel === 'L1' ? 'active' : ''} onClick={() => setSelectedLevel('L1')}>The Basics (L1)</span> &gt;
-        <span className={selectedLevel === 'L2' ? 'active' : ''} onClick={() => setSelectedLevel('L2')}>The Mechanics (L2)</span> &gt;
+        <span>Home</span>
+        <span className={selectedLevel === 'L1' ? 'active' : ''} onClick={() => setSelectedLevel('L1')}>The Basics (L1)</span>
+        <span className={selectedLevel === 'L2' ? 'active' : ''} onClick={() => setSelectedLevel('L2')}>How It Works (L2)</span>
         <span className={selectedLevel === 'L3' ? 'active' : ''} onClick={() => setSelectedLevel('L3')}>The Deep-Dive (L3)</span>
       </nav>
 
@@ -168,7 +166,14 @@ export default function App() {
         <div className="marquee-track video-grid">
           {repeatedVideos.map((video, idx) => {
             const videoId = getYouTubeId(video.youtube_link);
-            const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : video.thumbnail_link;
+            // Fallback chain: Bucket Thumbnail -> YouTube Thumbnail -> Original Sheet Thumbnail Link
+            const fallbackThumb = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : video.thumbnail_link;
+            const thumbnailUrl = video.thumbnail_link || fallbackThumb;
+
+            if (!thumbnailUrl) {
+              console.warn(`Missing thumbnail for video: ${video.video_title}`);
+              return null;
+            }
 
             return (
               <div key={idx} className="carousel-card" onClick={() => setActiveVideo(video)}>
@@ -227,7 +232,10 @@ export default function App() {
                     <div className="next-videos-grid">
                       {nextVideosSequence.map((vid, idx) => {
                         const vId = getYouTubeId(vid.youtube_link);
-                        const tUrl = vId ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg` : vid.thumbnail_link;
+                        // Fallback chain for Up Next videos
+                        const fallbackThumb = vId ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg` : vid.thumbnail_link;
+                        const tUrl = vid.thumbnail_link || fallbackThumb;
+                        
                         return (
                           <div key={idx} className="next-card" onClick={() => setActiveVideo(vid)}>
                             <img src={tUrl} alt={vid.video_title} className="next-thumb" />
