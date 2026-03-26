@@ -202,7 +202,7 @@ body {
 /* Keyframes for seamless infinite loop */
 @keyframes scrollMarquee {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-10%); } 
+  100% { transform: translateX(-15%); } 
   /* -10% shifts it left by exactly one grid block (since we now have 10 total blocks) */
 }
 
@@ -261,14 +261,96 @@ body {
   justify-content: center;
 }
 
+/* --- MODAL UPDATES --- */
 .video-modal-content {
   position: relative;
   width: 90%;
   max-width: 1100px;
+  max-height: 90vh; /* Prevents it from being taller than the screen */
+  background-color: #0b0f15;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto; /* Lets the text and next videos scroll! */
+}
+
+/* Force the video itself to be 16:9 */
+.video-player-container {
+  width: 100%;
   aspect-ratio: 16 / 9;
-  background-color: #000;
+  background: #000;
+  flex-shrink: 0; 
+}
+
+.video-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+}
+
+.video-info-panel {
+  padding: 2rem;
+}
+
+/* --- NEXT VIDEOS SECTION --- */
+.next-videos-section {
+  margin-top: 2rem;
+  border-top: 1px solid #1f2937;
+  padding-top: 1.5rem;
+}
+
+.next-videos-section h3 {
+  font-size: 1.1rem;
+  color: #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+.next-videos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.next-card {
+  background: #1f2937;
   border-radius: 8px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.next-card:hover {
+  transform: scale(1.03);
+}
+
+.next-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.next-info {
+  padding: 0.75rem;
+}
+
+.next-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+  color: #fff;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .video-iframe {
@@ -295,4 +377,96 @@ body {
 
 .close-modal-btn:hover {
   opacity: 1;
+}
+
+
+/* Top Menu Styling [cite: 61] */
+.top-menu {
+  padding: 1rem 4rem;
+  font-size: 0.9rem;
+  color: #9ca3af;
+  background: #0b0f15;
+  cursor: pointer;
+}
+.top-menu .active { color: white; font-weight: bold; }
+
+/* Tier Buttons [cite: 5, 9] */
+.level-selection-zone {
+  margin-bottom: 2rem;
+}
+.selection-hint {
+  font-size: 0.9rem;
+  color: #3b82f6;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+.tier-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.tier-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.tier-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Modal Enhancements [cite: 38] */
+.modal-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: white;
+  background: #111;
+  overflow-y: auto;
+}
+.video-info-panel {
+  padding: 2rem;
+}
+.vetted-badge {
+  display: inline-block;
+  background: #10b981;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+.complexity-switcher {
+  margin-top: 2rem;
+  border-top: 1px solid #333;
+  padding-top: 1rem;
+}
+.switch-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 0.5rem;
+}
+.mini-tier-btn {
+  background: transparent;
+  border: 1px solid #3b82f6;
+  color: #3b82f6;
+  padding: 5px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.video-title {
+  margin: 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color:#1b75eb;
+}
+.video-description {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #d1d5db;
+  max-width: 480px;
 }
