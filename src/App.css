@@ -13,7 +13,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Ensure container adapts if you add 10 rows! */
 .app-container {
   display: flex;
   flex-direction: column;
@@ -27,7 +26,7 @@ body {
   flex: 1; 
   display: flex;
   align-items: center;
-  min-height: 55vh; /* Forces the hero to be taller, matching the design */
+  min-height: 60vh; 
   overflow: hidden;
 }
 
@@ -37,7 +36,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url('assets/hero.png') right center/cover no-repeat;
+  background: url('assets/hero.png') center center/cover no-repeat;
   z-index: 1;
 }
 
@@ -47,7 +46,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to right, rgba(11, 15, 21, 1) 0%, rgba(11, 15, 21, 0.9) 35%, rgba(11, 15, 21, 0) 70%);
+  background: linear-gradient(to right, rgba(11, 15, 21, 1) 0%, rgba(11, 15, 21, 0.9) 35%, rgba(11, 15, 21, 0) 80%);
   z-index: 2;
 }
 
@@ -135,37 +134,42 @@ body {
   margin-left: 3px; 
 }
 
-/* --- INFINITE SCROLL GALLERY --- */
-.marquee-track {
+/* --- SCROLLING GALLERY --- */
+.carousel-wrapper {
+  position: relative;
   display: flex;
-  width: max-content;
-  /* Default speed for desktop */
-  animation: scrollMarquee 45s linear infinite;
+  align-items: center;
+  width: 100%;
+  padding: 1.5rem 0 3rem 0;
 }
 
-/* Pause the animation when the user hovers to click a video */
-.marquee-track:hover {
-  animation-play-state: paused;
-}
-
-.video-grid {
+.carousel-track {
   display: grid;
-  /* Default to 3 rows on desktop */
-  --row-count: 3; 
-  
-  grid-template-rows: repeat(var(--row-count), 1fr);
+  /* DESKTOP DEFAULT: 3 rows, filling columns left-to-right */
+  grid-template-rows: repeat(3, 1fr);
   grid-auto-flow: column;
-  gap: 2px;
-  padding-right: 2px;
+  gap: 12px;
+  
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+  padding: 0 4rem; 
+  width: 100%;
+  scrollbar-width: none; /* Firefox */
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .carousel-card {
-  width: 200px;
+  width: 240px; 
   aspect-ratio: 16 / 9;
   position: relative;
   cursor: pointer;
   background-color: #1f2937;
   transition: opacity 0.2s, transform 0.2s;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
 .carousel-card:hover {
@@ -198,53 +202,90 @@ body {
   margin-left: 2px;
 }
 
-/* Keyframes for seamless infinite loop */
-@keyframes scrollMarquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-15%); } 
+/* Carousel Nav Arrows */
+.nav-arrow {
+  position: absolute;
+  z-index: 10;
+  background: rgba(11, 15, 21, 0.6);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-arrow.left { left: 1rem; }
+.nav-arrow.right { right: 1rem; }
+
+.nav-arrow:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
 /* --- RESPONSIVE ADJUSTMENTS --- */
 @media (max-width: 1024px) {
-  .video-grid { 
-    --row-count: 2; 
+  .carousel-track {
+    grid-template-rows: repeat(2, 1fr); /* 2 rows on tablet */
   }
 }
 
 @media (max-width: 768px) {
-  .marquee-track {
-    animation-duration: 75s; 
-  }
-  
-  .carousel-card {
-    width: 200px; 
-  }
-  
   .hero-content {
-    padding: 0 2rem;
+    padding: 0 1.5rem;
   }
   
   .hero-title {
     font-size: 2.8rem;
   }
   
+  .hero-background {
+    background-position: center top !important; 
+  }
+
+  .carousel-wrapper {
+    padding: 1rem 0 2rem 0;
+  }
+
+  /* MOBILE: 1 Row, Snapping Scroll */
+  .carousel-track {
+    grid-template-rows: repeat(1, 1fr);
+    padding: 0 1rem;
+    gap: 0.75rem;
+    scroll-snap-type: x mandatory;
+  }
+
+  .carousel-card {
+    width: 82vw; 
+    max-width: 320px;
+    scroll-snap-align: center; /* Centers the active card on swipe */
+  }
+
+  /* Hide arrows on mobile since swiping is natural */
+  .nav-arrow {
+    display: none;
+  }
+
   .close-modal-btn {
     top: -35px;
     right: 0;
     font-size: 1.5rem;
   }
+
+  .top-menu { 
+    padding: 1rem; 
+    justify-content: center; 
+    flex-wrap: wrap; 
+    gap: 1rem;
+  }
 }
 
 /* --- UTILS & MODAL --- */
-.loading-screen, .error-screen {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--text-secondary);
-}
-
 .video-modal-overlay {
   position: fixed;
   top: 0;
@@ -259,12 +300,11 @@ body {
   justify-content: center;
 }
 
-/* --- MODAL UPDATES --- */
 .video-modal-content {
   position: relative;
   width: 90%;
   max-width: 1100px;
-  max-height: 90vh; /* Prevents it from being taller than the screen */
+  max-height: 90vh; 
   background-color: #0b0f15;
   border-radius: 12px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
@@ -276,10 +316,11 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto; /* Lets the text and next videos scroll! */
+  overflow-y: auto; 
+  color: white;
+  background: #111;
 }
 
-/* Force the video itself to be 16:9 */
 .video-player-container {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -376,11 +417,17 @@ body {
   font-size: 0.9rem;
   color: #9ca3af;
   background: #0b0f15;
-  cursor: pointer;
-  display: flex;         /* Added for spacing control */
-  gap: 1.5rem;           /* Adds space between the navigation items */
+  display: flex;         
+  gap: 1.5rem;           
   align-items: center;
 }
+
+.top-menu span {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.top-menu span:hover { color: white; }
 .top-menu .active { color: white; font-weight: bold; }
 
 /* Tier Buttons */
@@ -397,6 +444,7 @@ body {
   display: flex;
   gap: 10px;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 .tier-btn {
   background: rgba(255, 255, 255, 0.05);
@@ -412,18 +460,6 @@ body {
   border-color: #3b82f6;
 }
 
-/* Modal Enhancements */
-.modal-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  color: white;
-  background: #111;
-  overflow-y: auto;
-}
-.video-info-panel {
-  padding: 2rem;
-}
 .vetted-badge {
   display: inline-block;
   background: #10b981;
@@ -441,6 +477,7 @@ body {
   display: flex;
   gap: 10px;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
 }
 .mini-tier-btn {
   background: transparent;
@@ -449,6 +486,11 @@ body {
   padding: 5px 15px;
   border-radius: 4px;
   cursor: pointer;
+  transition: all 0.2s;
+}
+.mini-tier-btn:hover {
+  background: #3b82f6;
+  color: white;
 }
 .video-title {
   margin: 0.5rem 0;

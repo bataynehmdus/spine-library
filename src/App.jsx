@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
 import './App.css';
 
@@ -33,9 +33,11 @@ const getYouTubeId = (url) => {
 
 export default function App() {
   const [allVideos, setAllVideos] = useState([]);
-  const [selectedLevel, setSelectedLevel] = useState('L1'); // Default to L1
+  const [selectedLevel, setSelectedLevel] = useState('L1');
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState(null);
+  
+  const carouselTrackRef = useRef(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -62,34 +64,41 @@ export default function App() {
     loadData();
   }, []);
 
-  // Filter and SORT the carousel videos based on the new VidID order
+  // Filter and SORT the base videos
   const filteredVideos = allVideos
     .filter(v => v.video_class === selectedLevel)
     .sort((a, b) => parseInt(a.VidID, 10) - parseInt(b.VidID, 10));
     
   const featuredVideo = filteredVideos[0] || allVideos[0];
-  const repeatedVideos = Array(30).fill(filteredVideos).flat();
 
-  // Generate iframe embed URL for active video
+  // Duplicate the array to ensure the 3-row grid looks full
+  const displayVideos = Array(12).fill(filteredVideos).flat();
+
+  // Simple scroll handler for desktop arrows
+  const scrollCarousel = (direction) => {
+    if (carouselTrackRef.current) {
+      // Scroll by roughly the width of one card + gap
+      const scrollAmount = 260 * direction; 
+      carouselTrackRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   const getEmbedUrl = (video) => {
     if (!video || !video.youtube_link) return "";
     const videoId = getYouTubeId(video.youtube_link);
     return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : video.youtube_link;
   };
 
-  // --- UPDATED LOGIC: Switch Complexity via VidID ---
   const handleComplexitySwitch = (targetLevel) => {
-    // Find the exact video match using VidID for the target level
     const nextVideo = allVideos.find(
       (v) => v.VidID === activeVideo.VidID && v.video_class === targetLevel
     );
 
-    setSelectedLevel(targetLevel); // Update the background carousel
+    setSelectedLevel(targetLevel);
 
     if (nextVideo) {
       setActiveVideo(nextVideo);
     } else {
-      // Fallback if the video doesn't have that specific tier yet
       const fallbackVideo = allVideos
         .filter((v) => v.video_class === targetLevel)
         .sort((a, b) => parseInt(a.VidID, 10) - parseInt(b.VidID, 10))[0];
@@ -97,38 +106,38 @@ export default function App() {
     }
   };
 
-  // --- UPDATED LOGIC: Next Videos in Sequence (Wraparound) ---
   let nextVideosSequence = [];
   if (activeVideo) {
-    // 1. Get all videos in the current class, sorted correctly by VidID
     const sameClassVideos = allVideos
       .filter(v => v.video_class === activeVideo.video_class)
       .sort((a, b) => parseInt(a.VidID, 10) - parseInt(b.VidID, 10));
 
-    // 2. Find where the current video sits in that ordered list
     const currentIndex = sameClassVideos.findIndex(v => v.VidID === activeVideo.VidID);
     
     if (currentIndex !== -1) {
-      // 3. Slice the array to get the videos *after* the current one
       const after = sameClassVideos.slice(currentIndex + 1);
-      
-      // 4. Combine them so it smoothly plays in order and grabs the next 4
       nextVideosSequence = [...after].slice(0, 4);
     }
   }
 
+  const heroBackgroundStyle = {
+    backgroundImage: `url('/src/assets/${selectedLevel}.jpg')`,
+    backgroundPosition: 'center',
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat'
+  };
+
   return (
     <div className="app-container">
-      {/* Top Menu Updated */}
       <nav className="top-menu">
-        <span>Home</span>
+        <span onClick={() => window.location.href = 'https://mdus.ai'}>Home</span>
         <span className={selectedLevel === 'L1' ? 'active' : ''} onClick={() => setSelectedLevel('L1')}>The Basics (L1)</span>
         <span className={selectedLevel === 'L2' ? 'active' : ''} onClick={() => setSelectedLevel('L2')}>How It Works (L2)</span>
         <span className={selectedLevel === 'L3' ? 'active' : ''} onClick={() => setSelectedLevel('L3')}>The Deep-Dive (L3)</span>
       </nav>
 
       <header className="hero-section">
-        <div className="hero-background"></div>
+        <div className="hero-background" style={heroBackgroundStyle}></div>
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <div className="brand-header">
@@ -162,18 +171,19 @@ export default function App() {
         </div>
       </header>
 
-      <main className="carousel-section">
-        <div className="marquee-track video-grid">
-          {repeatedVideos.map((video, idx) => {
+      {/* Standard Scrolling Gallery Section */}
+      <main className="carousel-wrapper">
+        <button className="nav-arrow left" onClick={() => scrollCarousel(-1)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+
+        <div className="carousel-track" ref={carouselTrackRef}>
+          {displayVideos.map((video, idx) => {
             const videoId = getYouTubeId(video.youtube_link);
-            // Fallback chain: Bucket Thumbnail -> YouTube Thumbnail -> Original Sheet Thumbnail Link
             const fallbackThumb = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : video.thumbnail_link;
             const thumbnailUrl = video.thumbnail_link || fallbackThumb;
 
-            if (!thumbnailUrl) {
-              console.warn(`Missing thumbnail for video: ${video.video_title}`);
-              return null;
-            }
+            if (!thumbnailUrl) return null;
 
             return (
               <div key={idx} className="carousel-card" onClick={() => setActiveVideo(video)}>
@@ -185,6 +195,10 @@ export default function App() {
             );
           })}
         </div>
+
+        <button className="nav-arrow right" onClick={() => scrollCarousel(1)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
       </main>
 
       {/* Modal Overlay */}
@@ -225,14 +239,12 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Up Next Grid relying on continuous VidID looping */}
                 {nextVideosSequence.length > 0 && (
                   <div className="next-videos-section">
                     <h3>Up Next in {TIER_INFO[activeVideo.video_class]?.label}</h3>
                     <div className="next-videos-grid">
                       {nextVideosSequence.map((vid, idx) => {
                         const vId = getYouTubeId(vid.youtube_link);
-                        // Fallback chain for Up Next videos
                         const fallbackThumb = vId ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg` : vid.thumbnail_link;
                         const tUrl = vid.thumbnail_link || fallbackThumb;
                         
