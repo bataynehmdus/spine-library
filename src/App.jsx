@@ -121,7 +121,7 @@ export default function App() {
   }
 
   const heroBackgroundStyle = {
-    backgroundImage: `url('/src/assets/${selectedLevel}.jpg')`,
+    backgroundImage: `url('/${selectedLevel}.jpg')`,
     backgroundPosition: 'center',
     backgroundSize: 'cover',
     backgroundRepeat: 'no-repeat'
