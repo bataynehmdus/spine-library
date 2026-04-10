@@ -5,8 +5,8 @@ import './App.css';
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkz6c9GnRDR3j3gj0RV52we5G_WKn6znBTwZPpbB19zas1xQeiSCEvq4fSnylHdtjLKyS7GxnlzLt/pub?gid=0&single=true&output=csv";
 
 const Icons = {
-  L1: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/></svg>,
-  L2: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>,
+  L1: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /></svg>,
+  L2: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></svg>,
   L3: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
 };
 
@@ -19,19 +19,19 @@ const ACCENT_COLORS = {
 // Tier Data
 const TIER_INFO = {
   L1: {
-    label: "The Basics (L1)",
-    title: "Tier 1: Core (L1) - The Foundational Overview",
-    description: "This tier provides a foundational understanding of spinal health and common conditions. Using accessible, non-medical language and clear visual metaphors, these videos focus on reducing anxiety."
+    label: "The Basics",
+    title: "Tier 1: Core - The Foundational Overview",
+    description: "Understand your condition and your spine"
   },
   L2: {
-    label: "How It Works (L2)",
-    title: "Tier 2: Column (L2) - The Procedural Journey",
-    description: "This level transitions into the 'how' and 'why' of spinal mechanics and interventions. It provides a more structured exploration of anatomy and the logical steps of a treatment plan."
+    label: "How It Works",
+    title: "Tier 2: Column - The Procedural Journey",
+    description: "See how treatments and procedures are done"
   },
   L3: {
-    label: "The Deep-Dive (L3)",
-    title: "Tier 3: Neural (L3) - The Advanced Deep-Dive",
-    description: "Our most technical tier, dedicated to the intricate complexities of spinal medicine. These videos explore biomechanical principles, surgical nuances, and specific clinical outcomes."
+    label: "The Deep-Dive",
+    title: "Tier 3: Neural - The Advanced Deep-Dive",
+    description: "Get detailed explanations of your care options"
   }
 };
 
@@ -48,7 +48,7 @@ const SeriesRow = ({ series, videos, getEmbedUrl, setActiveVideo }) => {
 
   const scrollCarousel = (direction) => {
     if (trackRef.current) {
-      const scrollAmount = 260 * direction; 
+      const scrollAmount = 260 * direction;
       trackRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
@@ -101,7 +101,7 @@ export default function App() {
         const result = await reader.read();
         const decoder = new TextDecoder('utf-8');
         const csv = decoder.decode(result.value);
-        
+
         Papa.parse(csv, {
           header: true,
           skipEmptyLines: true,
@@ -122,7 +122,7 @@ export default function App() {
   const filteredVideos = allVideos
     .filter(v => v.video_class === selectedLevel)
     .sort((a, b) => parseInt(a.VidID, 10) - parseInt(b.VidID, 10));
-    
+
   const featuredVideo = filteredVideos[0] || allVideos[0];
 
   // Group videos by series
@@ -163,7 +163,7 @@ export default function App() {
       .sort((a, b) => parseInt(a.VidID, 10) - parseInt(b.VidID, 10));
 
     const currentIndex = sameClassVideos.findIndex(v => v.VidID === activeVideo.VidID);
-    
+
     if (currentIndex !== -1) {
       const after = sameClassVideos.slice(currentIndex + 1);
       nextVideosSequence = [...after].slice(0, 4);
@@ -185,114 +185,115 @@ export default function App() {
         </div>
         <nav className="sidebar-menu">
           <button className={`sidebar-item ${selectedLevel === 'L1' ? 'active' : ''}`} onClick={() => setSelectedLevel('L1')}>
-            <span className="sidebar-icon" style={{color: ACCENT_COLORS['L1']}}><Icons.L1 /></span>
-            <span className="sidebar-text">The Basics (L1)</span>
+            <span className="sidebar-icon" style={{ color: ACCENT_COLORS['L1'] }}><Icons.L1 /></span>
+            <span className="sidebar-text">The Basics</span>
           </button>
           <button className={`sidebar-item ${selectedLevel === 'L2' ? 'active' : ''}`} onClick={() => setSelectedLevel('L2')}>
-            <span className="sidebar-icon" style={{color: ACCENT_COLORS['L2']}}><Icons.L2 /></span>
-            <span className="sidebar-text">How It Works (L2)</span>
+            <span className="sidebar-icon" style={{ color: ACCENT_COLORS['L2'] }}><Icons.L2 /></span>
+            <span className="sidebar-text">How It Works</span>
           </button>
           <button className={`sidebar-item ${selectedLevel === 'L3' ? 'active' : ''}`} onClick={() => setSelectedLevel('L3')}>
-            <span className="sidebar-icon" style={{color: ACCENT_COLORS['L3']}}><Icons.L3 /></span>
-            <span className="sidebar-text">The Deep-Dive (L3)</span>
+            <span className="sidebar-icon" style={{ color: ACCENT_COLORS['L3'] }}><Icons.L3 /></span>
+            <span className="sidebar-text">The Deep-Dive</span>
           </button>
         </nav>
       </aside>
 
       <div className="main-content">
         <header className="hero-section">
-        <div className="hero-background" style={heroBackgroundStyle}></div>
-        <div className="hero-overlay"></div>
-        <div className="hero-content">
-          <h1 className="hero-title">Spine library</h1>
-          <p className="hero-description">{TIER_INFO[selectedLevel].description}</p>
+          <div className="hero-background" style={heroBackgroundStyle}></div>
+          <div className="hero-overlay"></div>
+          <div className="hero-content">
+            <h1 className="hero-title">Spine library</h1>
+            <p className="hero-description">{TIER_INFO[selectedLevel].description}</p>
 
-          <button onClick={() => setActiveVideo(featuredVideo)} className="watch-now-btn">
-            <span className="btn-text">PLAY</span> 
-            <div className="play-icon-circle">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-            </div>
-          </button>
-        </div>
-      </header>
-
-      <main className="series-container">
-        {Object.entries(videosBySeries).map(([series, videos]) => (
-          <SeriesRow 
-            key={series} 
-            series={series} 
-            videos={videos} 
-            getEmbedUrl={getEmbedUrl} 
-            setActiveVideo={setActiveVideo} 
-          />
-        ))}
-      </main>
-
-      {/* Modal Overlay */}
-      {activeVideo && (
-        <div className="video-modal-overlay" onClick={() => setActiveVideo(null)}>
-          <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={() => setActiveVideo(null)}>✕</button>
-            <div className="modal-layout">
-              
-              <div className="video-player-container">
-                <iframe 
-                  src={getEmbedUrl(activeVideo)} 
-                  className="video-iframe" 
-                  allowFullScreen
-                  allow="autoplay; encrypted-media"
-                ></iframe>
+            <button onClick={() => setActiveVideo(featuredVideo)} className="watch-now-btn">
+              <span className="btn-text">PLAY</span>
+              <div className="play-icon-circle">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
               </div>
+            </button>
+          </div>
+        </header>
 
-              <div className="video-info-panel">
-                <div className="badge-container">
-                  <span className="vetted-badge">✔ Physician Vetted</span>
+        <main className="series-container">
+          {Object.entries(videosBySeries).map(([series, videos]) => (
+            <SeriesRow
+              key={series}
+              series={series}
+              videos={videos}
+              getEmbedUrl={getEmbedUrl}
+              setActiveVideo={setActiveVideo}
+            />
+          ))}
+        </main>
+
+        {/* Modal Overlay */}
+        {activeVideo && (
+          <div className="video-modal-overlay" onClick={() => setActiveVideo(null)}>
+            <div className="video-modal-content" onClick={(e) => e.stopPropagation()}>
+              <button className="close-modal-btn" onClick={() => setActiveVideo(null)}>✕</button>
+              <div className="modal-layout">
+
+                <div className="video-player-container">
+                  <iframe
+                    src={getEmbedUrl(activeVideo)}
+                    className="video-iframe"
+                    allowFullScreen
+                    allow="autoplay; encrypted-media"
+                  ></iframe>
                 </div>
-                <h2 className="video-title">{activeVideo.video_title}</h2>
-                <p>{activeVideo.Description || "Description pending..."}</p>
-                
-                <div className="complexity-switcher">
-                  <p>Switch Complexity:</p>
-                  <div className="switch-buttons">
-                    {Object.keys(TIER_INFO).filter(k => k !== activeVideo.video_class).map(k => (
-                      <button 
-                        key={k} 
-                        onClick={() => handleComplexitySwitch(k)} 
-                        className="mini-tier-btn"
-                      >
-                        Watch {k} Version
-                      </button>
-                    ))}
+
+                <div className="video-info-panel">
+                  <div className="badge-container">
+                    <span className="vetted-badge">✔ Physician Vetted</span>
                   </div>
-                </div>
+                  <h2 className="video-title">{activeVideo.video_title}</h2>
+                  <p>{activeVideo.Description || "Description pending..."}</p>
 
-                {nextVideosSequence.length > 0 && (
-                  <div className="next-videos-section">
-                    <h3>Up Next in {TIER_INFO[activeVideo.video_class]?.label}</h3>
-                    <div className="next-videos-grid">
-                      {nextVideosSequence.map((vid, idx) => {
-                        const vId = getYouTubeId(vid.youtube_link);
-                        const fallbackThumb = vId ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg` : vid.thumbnail_link;
-                        const tUrl = vid.thumbnail_link || fallbackThumb;
-                        
-                        return (
-                          <div key={idx} className="next-card" onClick={() => setActiveVideo(vid)}>
-                            <img src={tUrl} alt={vid.video_title} className="next-thumb" />
-                            <div className="next-info">
-                              <p className="next-title">{vid.video_title}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
+                  <div className="complexity-switcher">
+                    <p>Switch Complexity:</p>
+                    <div className="switch-buttons">
+                      {Object.keys(TIER_INFO).filter(k => k !== activeVideo.video_class).map(k => (
+                        <button
+                          key={k}
+                          onClick={() => handleComplexitySwitch(k)}
+                          className="mini-tier-btn"
+                          style={{ borderColor: ACCENT_COLORS[k], color: ACCENT_COLORS[k] }}
+                        >
+                          Watch {TIER_INFO[k]?.label} Version
+                        </button>
+                      ))}
                     </div>
                   </div>
-                )}
 
+                  {nextVideosSequence.length > 0 && (
+                    <div className="next-videos-section">
+                      <h3>Up Next in {TIER_INFO[activeVideo.video_class]?.label}</h3>
+                      <div className="next-videos-grid">
+                        {nextVideosSequence.map((vid, idx) => {
+                          const vId = getYouTubeId(vid.youtube_link);
+                          const fallbackThumb = vId ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg` : vid.thumbnail_link;
+                          const tUrl = vid.thumbnail_link || fallbackThumb;
+
+                          return (
+                            <div key={idx} className="next-card" onClick={() => setActiveVideo(vid)}>
+                              <img src={tUrl} alt={vid.video_title} className="next-thumb" />
+                              <div className="next-info">
+                                <p className="next-title">{vid.video_title}</p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </div>
   );
