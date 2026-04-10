@@ -214,15 +214,30 @@ export default function App() {
         </header>
 
         <main className="series-container">
-          {Object.entries(videosBySeries).map(([series, videos]) => (
-            <SeriesRow
-              key={series}
-              series={series}
-              videos={videos}
-              getEmbedUrl={getEmbedUrl}
-              setActiveVideo={setActiveVideo}
-            />
-          ))}
+          {loading ? (
+            <div className="skeleton-container">
+              {[1, 2].map(i => (
+                <div key={i} className="skeleton-row">
+                  <div className="skeleton-title"></div>
+                  <div className="skeleton-cards">
+                    {[1, 2, 3, 4].map(j => (
+                      <div key={j} className="skeleton-card"></div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            Object.entries(videosBySeries).map(([series, videos]) => (
+              <SeriesRow
+                key={series}
+                series={series}
+                videos={videos}
+                getEmbedUrl={getEmbedUrl}
+                setActiveVideo={setActiveVideo}
+              />
+            ))
+          )}
         </main>
 
         {/* Modal Overlay */}
