@@ -4,6 +4,18 @@ import './App.css';
 
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkz6c9GnRDR3j3gj0RV52we5G_WKn6znBTwZPpbB19zas1xQeiSCEvq4fSnylHdtjLKyS7GxnlzLt/pub?gid=0&single=true&output=csv";
 
+const Icons = {
+  L1: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/></svg>,
+  L2: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>,
+  L3: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+};
+
+const ACCENT_COLORS = {
+  L1: '#00BFFF',
+  L2: '#FFBF00',
+  L3: '#FF7F50'
+};
+
 // Tier Data
 const TIER_INFO = {
   L1: {
@@ -31,13 +43,55 @@ const getYouTubeId = (url) => {
   return (match && match[2].length === 11) ? match[2] : null;
 };
 
+const SeriesRow = ({ series, videos, getEmbedUrl, setActiveVideo }) => {
+  const trackRef = useRef(null);
+
+  const scrollCarousel = (direction) => {
+    if (trackRef.current) {
+      const scrollAmount = 260 * direction; 
+      trackRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <div className="series-section">
+      <h2 className="series-title">{series}</h2>
+      <div className="series-carousel-wrapper">
+        <button className="nav-arrow left" onClick={() => scrollCarousel(-1)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <div className="carousel-track" ref={trackRef}>
+          {videos.map((video, idx) => {
+            const videoId = getYouTubeId(video.youtube_link);
+            const fallbackThumb = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : video.thumbnail_link;
+            const thumbnailUrl = video.thumbnail_link || fallbackThumb;
+
+            if (!thumbnailUrl) return null;
+
+            return (
+              <div key={idx} className="carousel-card" onClick={() => setActiveVideo(video)}>
+                <img src={thumbnailUrl} alt={video.video_title} className="carousel-image" />
+                <div className="play-overlay-always">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z" /></svg>
+                </div>
+                <div className="carousel-title-overlay">{video.video_title}</div>
+              </div>
+            );
+          })}
+        </div>
+        <button className="nav-arrow right" onClick={() => scrollCarousel(1)}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [allVideos, setAllVideos] = useState([]);
   const [selectedLevel, setSelectedLevel] = useState('L1');
   const [loading, setLoading] = useState(true);
   const [activeVideo, setActiveVideo] = useState(null);
-  
-  const carouselTrackRef = useRef(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -71,17 +125,13 @@ export default function App() {
     
   const featuredVideo = filteredVideos[0] || allVideos[0];
 
-  // Duplicate the array to ensure the 3-row grid looks full
-  const displayVideos = Array(12).fill(filteredVideos).flat();
-
-  // Simple scroll handler for desktop arrows
-  const scrollCarousel = (direction) => {
-    if (carouselTrackRef.current) {
-      // Scroll by roughly the width of one card + gap
-      const scrollAmount = 260 * direction; 
-      carouselTrackRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
+  // Group videos by series
+  const videosBySeries = filteredVideos.reduce((acc, video) => {
+    const seriesName = video.video_series && video.video_series.trim() !== '' ? video.video_series : "Featured";
+    if (!acc[seriesName]) acc[seriesName] = [];
+    acc[seriesName].push(video);
+    return acc;
+  }, {});
 
   const getEmbedUrl = (video) => {
     if (!video || !video.youtube_link) return "";
@@ -128,39 +178,34 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
-      <nav className="top-menu">
-        <span onClick={() => window.location.href = 'https://mdus.ai'}>Home</span>
-        <span className={selectedLevel === 'L1' ? 'active' : ''} onClick={() => setSelectedLevel('L1')}>The Basics (L1)</span>
-        <span className={selectedLevel === 'L2' ? 'active' : ''} onClick={() => setSelectedLevel('L2')}>How It Works (L2)</span>
-        <span className={selectedLevel === 'L3' ? 'active' : ''} onClick={() => setSelectedLevel('L3')}>The Deep-Dive (L3)</span>
-      </nav>
+    <div className="app-layout" style={{ '--active-accent': ACCENT_COLORS[selectedLevel] }}>
+      <aside className="sidebar">
+        <div className="sidebar-brand" onClick={() => window.location.href = 'https://mdus.ai'}>
+          <img src="Logo_Large_White.png" alt="Spine Library" className="brand-logo-img" />
+        </div>
+        <nav className="sidebar-menu">
+          <button className={`sidebar-item ${selectedLevel === 'L1' ? 'active' : ''}`} onClick={() => setSelectedLevel('L1')}>
+            <span className="sidebar-icon" style={{color: ACCENT_COLORS['L1']}}><Icons.L1 /></span>
+            <span className="sidebar-text">The Basics (L1)</span>
+          </button>
+          <button className={`sidebar-item ${selectedLevel === 'L2' ? 'active' : ''}`} onClick={() => setSelectedLevel('L2')}>
+            <span className="sidebar-icon" style={{color: ACCENT_COLORS['L2']}}><Icons.L2 /></span>
+            <span className="sidebar-text">How It Works (L2)</span>
+          </button>
+          <button className={`sidebar-item ${selectedLevel === 'L3' ? 'active' : ''}`} onClick={() => setSelectedLevel('L3')}>
+            <span className="sidebar-icon" style={{color: ACCENT_COLORS['L3']}}><Icons.L3 /></span>
+            <span className="sidebar-text">The Deep-Dive (L3)</span>
+          </button>
+        </nav>
+      </aside>
 
-      <header className="hero-section">
+      <div className="main-content">
+        <header className="hero-section">
         <div className="hero-background" style={heroBackgroundStyle}></div>
         <div className="hero-overlay"></div>
         <div className="hero-content">
-          <div className="brand-header">
-            <img src="Logo_Large_White.png" alt="Logo" className="brand-logo-img" />
-          </div>
-
           <h1 className="hero-title">Spine library</h1>
           <p className="hero-description">{TIER_INFO[selectedLevel].description}</p>
-
-          <div className="level-selection-zone">
-            <p className="selection-hint">Select your depth: from 2-minute overviews to surgical deep-dives.</p>
-            <div className="tier-buttons">
-              {Object.keys(TIER_INFO).map(key => (
-                <button 
-                  key={key} 
-                  className={`tier-btn ${selectedLevel === key ? 'active' : ''}`}
-                  onClick={() => setSelectedLevel(key)}
-                >
-                  {TIER_INFO[key].label}
-                </button>
-              ))}
-            </div>
-          </div>
 
           <button onClick={() => setActiveVideo(featuredVideo)} className="watch-now-btn">
             <span className="btn-text">PLAY</span> 
@@ -171,34 +216,16 @@ export default function App() {
         </div>
       </header>
 
-      {/* Standard Scrolling Gallery Section */}
-      <main className="carousel-wrapper">
-        <button className="nav-arrow left" onClick={() => scrollCarousel(-1)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-
-        <div className="carousel-track" ref={carouselTrackRef}>
-          {displayVideos.map((video, idx) => {
-            const videoId = getYouTubeId(video.youtube_link);
-            const fallbackThumb = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : video.thumbnail_link;
-            const thumbnailUrl = video.thumbnail_link || fallbackThumb;
-
-            if (!thumbnailUrl) return null;
-
-            return (
-              <div key={idx} className="carousel-card" onClick={() => setActiveVideo(video)}>
-                <img src={thumbnailUrl} alt={video.video_title} className="carousel-image" />
-                <div className="play-overlay-always">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z" /></svg>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <button className="nav-arrow right" onClick={() => scrollCarousel(1)}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </button>
+      <main className="series-container">
+        {Object.entries(videosBySeries).map(([series, videos]) => (
+          <SeriesRow 
+            key={series} 
+            series={series} 
+            videos={videos} 
+            getEmbedUrl={getEmbedUrl} 
+            setActiveVideo={setActiveVideo} 
+          />
+        ))}
       </main>
 
       {/* Modal Overlay */}
@@ -266,6 +293,7 @@ export default function App() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
