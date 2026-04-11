@@ -87,6 +87,32 @@ const SeriesRow = ({ series, videos, getEmbedUrl, setActiveVideo }) => {
   );
 };
 
+const DescriptionText = ({ text }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const maxLength = 200; 
+
+  if (!text) return <p className="video-description">Description pending...</p>;
+
+  const textString = String(text);
+  if (textString.length <= maxLength) {
+    return <p className="video-description">{textString}</p>;
+  }
+
+  return (
+    <div className="video-description">
+      <span>
+        {isExpanded ? textString : `${textString.slice(0, maxLength)}...`}
+      </span>
+      <button 
+        onClick={() => setIsExpanded(!isExpanded)} 
+        className="read-more-btn"
+      >
+        {isExpanded ? "Show less" : "Continue reading"}
+      </button>
+    </div>
+  );
+};
+
 export default function App() {
   const [allVideos, setAllVideos] = useState([]);
   const [selectedLevel, setSelectedLevel] = useState('L1');
@@ -124,9 +150,19 @@ export default function App() {
 
   // Group videos by series
   const videosBySeries = filteredVideos.reduce((acc, video) => {
-    const seriesName = video.video_series && video.video_series.trim() !== '' ? video.video_series : "Featured";
-    if (!acc[seriesName]) acc[seriesName] = [];
-    acc[seriesName].push(video);
+    let rawSeries = video.video_series && video.video_series.trim() !== '' ? video.video_series : "Featured";
+    
+    // Normalize string: trim ends, replace multiple spaces with single space
+    let normalized = rawSeries.trim().replace(/\s+/g, ' ');
+    // Apply Title Case for consistent beautiful display
+    normalized = normalized.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    
+    // Check if an existing key matches case-insensitively (just in case Title Case logic isn't enough, e.g., 'and' vs 'And')
+    const existingKey = Object.keys(acc).find(key => key.toLowerCase() === normalized.toLowerCase());
+    const finalSeriesName = existingKey || normalized;
+    
+    if (!acc[finalSeriesName]) acc[finalSeriesName] = [];
+    acc[finalSeriesName].push(video);
     return acc;
   }, {});
 
@@ -261,7 +297,7 @@ export default function App() {
                     <span className="vetted-badge">✔ Physician Vetted</span>
                   </div>
                   <h2 className="video-title">{activeVideo.video_title}</h2>
-                  <p>{activeVideo.Description || "Description pending..."}</p>
+                  <DescriptionText text={activeVideo.Description} />
 
                   <div className="complexity-switcher">
                     <p>Switch Complexity:</p>

@@ -775,12 +775,29 @@ body {
   margin: 0.5rem 0;
   font-size: 1.5rem;
   font-weight: 700;
-  color:#1b75eb;
+  color: #f8fafc;
 }
+
 .video-description {
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  line-height: 1.5;
+  margin: 0.75rem 0 1.5rem 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
   color: #d1d5db;
-  max-width: 480px;
+  max-width: 800px;
+}
+
+.read-more-btn {
+  background: none;
+  border: none;
+  color: var(--active-accent);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0;
+  margin-left: 5px;
+  display: inline-block;
+}
+
+.read-more-btn:hover {
+  text-decoration: underline;
 }
