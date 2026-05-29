@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Papa from 'papaparse';
+import { videoData } from './data.js';
 import './App.css';
-
-const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSTkz6c9GnRDR3j3gj0RV52we5G_WKn6znBTwZPpbB19zas1xQeiSCEvq4fSnylHdtjLKyS7GxnlzLt/pub?gid=0&single=true&output=csv";
 
 const Icons = {
   L1: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /></svg>,
@@ -62,7 +60,7 @@ const SeriesRow = ({ series, videos, getEmbedUrl, setActiveVideo }) => {
         </button>
         <div className="carousel-track" ref={trackRef}>
           {videos.map((video, idx) => {
-            const videoId = getYouTubeId(video.youtube_link);
+            const videoId = getYouTubeId(video.youtube_embed_link);
             const fallbackThumb = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : video.thumbnail_link;
             const thumbnailUrl = video.thumbnail_link || fallbackThumb;
 
@@ -89,7 +87,7 @@ const SeriesRow = ({ series, videos, getEmbedUrl, setActiveVideo }) => {
 
 const DescriptionText = ({ text }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 200; 
+  const maxLength = 200;
 
   if (!text) return <p className="video-description">Description pending...</p>;
 
@@ -103,8 +101,8 @@ const DescriptionText = ({ text }) => {
       <span>
         {isExpanded ? textString : `${textString.slice(0, maxLength)}...`}
       </span>
-      <button 
-        onClick={() => setIsExpanded(!isExpanded)} 
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
         className="read-more-btn"
       >
         {isExpanded ? "Show less" : "Continue reading"}
@@ -114,32 +112,10 @@ const DescriptionText = ({ text }) => {
 };
 
 export default function App() {
-  const [allVideos, setAllVideos] = useState([]);
+  const [allVideos, setAllVideos] = useState(videoData);
   const [selectedLevel, setSelectedLevel] = useState('L1');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [activeVideo, setActiveVideo] = useState(null);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const response = await fetch(SHEET_URL);
-        const csv = await response.text();
-
-        Papa.parse(csv, {
-          header: true,
-          skipEmptyLines: true,
-          complete: (results) => {
-            setAllVideos(results.data);
-            setLoading(false);
-          }
-        });
-      } catch (error) {
-        console.error("Error loading data:", error);
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, []);
 
   // Filter and SORT the base videos
   const filteredVideos = allVideos
@@ -151,25 +127,26 @@ export default function App() {
   // Group videos by series
   const videosBySeries = filteredVideos.reduce((acc, video) => {
     let rawSeries = video.video_series && video.video_series.trim() !== '' ? video.video_series : "Featured";
-    
+
     // Normalize string: trim ends, replace multiple spaces with single space
     let normalized = rawSeries.trim().replace(/\s+/g, ' ');
     // Apply Title Case for consistent beautiful display
     normalized = normalized.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-    
+
     // Check if an existing key matches case-insensitively (just in case Title Case logic isn't enough, e.g., 'and' vs 'And')
     const existingKey = Object.keys(acc).find(key => key.toLowerCase() === normalized.toLowerCase());
     const finalSeriesName = existingKey || normalized;
-    
+
     if (!acc[finalSeriesName]) acc[finalSeriesName] = [];
     acc[finalSeriesName].push(video);
     return acc;
   }, {});
 
   const getEmbedUrl = (video) => {
-    if (!video || !video.youtube_link) return "";
-    const videoId = getYouTubeId(video.youtube_link);
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : video.youtube_link;
+    if (!video || !video.youtube_embed_link) return "";
+    // Avoid appending autoplay=1, as it causes Playback ID errors in some browsers due to autoplay policies.
+    const videoId = getYouTubeId(video.youtube_embed_link);
+    return videoId ? `https://www.youtube.com/embed/${videoId}?rel=0` : video.youtube_embed_link;
   };
 
   const handleComplexitySwitch = (targetLevel) => {
@@ -287,8 +264,11 @@ export default function App() {
                   <iframe
                     src={getEmbedUrl(activeVideo)}
                     className="video-iframe"
+                    title="YouTube video player"
+                    frameBorder="0"
                     allowFullScreen
-                    allow="autoplay; encrypted-media"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   ></iframe>
                 </div>
 
@@ -320,7 +300,7 @@ export default function App() {
                       <h3>Up Next in {TIER_INFO[activeVideo.video_class]?.label}</h3>
                       <div className="next-videos-grid">
                         {nextVideosSequence.map((vid, idx) => {
-                          const vId = getYouTubeId(vid.youtube_link);
+                          const vId = getYouTubeId(vid.youtube_embed_link);
                           const fallbackThumb = vId ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg` : vid.thumbnail_link;
                           const tUrl = vid.thumbnail_link || fallbackThumb;
 
