@@ -253,6 +253,11 @@ export default function App() {
           )}
         </main>
 
+        <footer className="main-footer">
+          <a href="https://mdus.ai/terms-of-use" target="_blank" rel="noopener noreferrer">Terms of Use</a>
+          <a href="https://mdus.ai/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        </footer>
+
         {/* Modal Overlay */}
         {activeVideo && (
           <div className="video-modal-overlay" onClick={() => setActiveVideo(null)}>
