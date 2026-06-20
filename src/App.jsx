@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { videoData } from './data.js';
+import { SmartSearch } from './SmartSearch.jsx';
 import './App.css';
 
 const Icons = {
@@ -115,7 +116,9 @@ export default function App() {
   const [allVideos, setAllVideos] = useState(videoData);
   const [selectedLevel, setSelectedLevel] = useState('L1');
   const [loading, setLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [activeVideo, setActiveVideo] = useState(null);
+  const [searchResults, setSearchResults] = useState(null);
 
   // Filter and SORT the base videos
   const filteredVideos = allVideos
@@ -210,8 +213,23 @@ export default function App() {
       </aside>
 
       <div className="main-content">
-        <header className="hero-section">
-          <div className="hero-background" style={heroBackgroundStyle}></div>
+        <div className="top-bar" style={{ padding: '20px 40px', position: 'absolute', top: 0, right: 0, zIndex: 10, width: '100%', display: 'flex', justifyContent: 'flex-end', boxSizing: 'border-box' }}>
+          <SmartSearch 
+            onSearchStart={() => setIsSearching(true)}
+            onSearchResults={(results) => {
+              setSearchResults(results);
+              setIsSearching(false);
+            }} 
+            onClearSearch={() => {
+              setSearchResults(null);
+              setIsSearching(false);
+            }} 
+          />
+        </div>
+        
+        {!searchResults && !isSearching && (
+          <header className="hero-section">
+            <div className="hero-background" style={heroBackgroundStyle}></div>
           <div className="hero-overlay"></div>
           <div className="hero-content">
             <h1 className="hero-title">Spine library</h1>
@@ -225,9 +243,51 @@ export default function App() {
             </button>
           </div>
         </header>
+        )}
 
         <main className="series-container">
-          {loading ? (
+          {isSearching ? (
+            <div className="search-results-section">
+              <h2 className="series-title" style={{ marginTop: '60px' }}>Analyzing your query...</h2>
+              <div className="skeleton-container">
+                {[1, 2].map(i => (
+                  <div key={i} className="skeleton-row">
+                    <div className="skeleton-title" style={{ width: '150px' }}></div>
+                    <div className="skeleton-cards">
+                      {[1, 2, 3, 4].map(j => (
+                        <div key={j} className="skeleton-card"></div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : searchResults ? (
+            <div className="search-results-section">
+              <h2 className="series-title" style={{ marginTop: '60px' }}>Search Results</h2>
+              {searchResults.length === 0 ? (
+                <p style={{ color: 'white' }}>No videos found for your search.</p>
+              ) : (
+                <div className="search-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+                  {searchResults.map((video, idx) => {
+                    const videoId = getYouTubeId(video.youtube_embed_link);
+                    const fallbackThumb = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : video.thumbnail_link;
+                    const thumbnailUrl = video.thumbnail_link || fallbackThumb;
+
+                    return (
+                      <div key={idx} className="carousel-card" onClick={() => setActiveVideo(video)}>
+                        <img src={thumbnailUrl} alt={video.video_title} className="carousel-image" />
+                        <div className="play-overlay-always">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                        <div className="carousel-title-overlay">{video.video_title} <span style={{fontSize: '0.8em', opacity: 0.8}}>({video.video_class})</span></div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : loading ? (
             <div className="skeleton-container">
               {[1, 2].map(i => (
                 <div key={i} className="skeleton-row">
