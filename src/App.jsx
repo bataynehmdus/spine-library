@@ -213,7 +213,7 @@ export default function App() {
       </aside>
 
       <div className="main-content">
-        <div className="top-bar" style={{ padding: '20px 40px', position: 'absolute', top: 0, right: 0, zIndex: 10, width: '100%', display: 'flex', justifyContent: 'flex-end', boxSizing: 'border-box' }}>
+        {/* <div className="top-bar" style={{ padding: '20px 40px', position: 'absolute', top: 0, right: 0, zIndex: 10, width: '100%', display: 'flex', justifyContent: 'flex-end', boxSizing: 'border-box' }}>
           <SmartSearch 
             onSearchStart={() => setIsSearching(true)}
             onSearchResults={(results) => {
@@ -225,7 +225,7 @@ export default function App() {
               setIsSearching(false);
             }} 
           />
-        </div>
+        </div> */}
         
         {!searchResults && !isSearching && (
           <header className="hero-section">
